@@ -10,4 +10,4 @@ __pycache__/
 *.pkl
 *.keras
 config.yml
-secrets.json
+config-quote.json
