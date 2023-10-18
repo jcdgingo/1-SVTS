@@ -1,3 +1,13 @@
 python-venv/
 *.log
 API_keys.txt
+*.ipynb_checkpoints/
+__pycache__/
+*.pyc
+*.xlsx
+*.csv
+*.h5
+*.pkl
+*.keras
+config.yml
+secrets.json
