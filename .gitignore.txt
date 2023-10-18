@@ -1,0 +1,3 @@
+python-venv/
+*.log
+API_keys.txt
