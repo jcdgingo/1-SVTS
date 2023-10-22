@@ -6,15 +6,15 @@ from sklearn.preprocessing import StandardScaler
 
 class FinancialAnalytics:
 
-    def __init__(self, ticker='FOREX:EUR', date_from='20210404T0130', sort='EARLIEST', file_path=r'C:\Users\jessi\OneDrive\1 Projects\1-svts\data\raw\EURUSD_M1_201101030000_202310201036.csv'):
-        self.ticker = ticker
-        self.date_from = date_from
+    def __init__(self, file_path, ticker, date_from, sort):
         self.file_path = file_path
+        self.ticker = ticker
+        self.date_from = date_from      
         self.sort = sort
 
     def fetch_market_price_data(self):
-        df_tsv = pd.read_csv(self.file_path, sep='\t')
-        df_tsv.drop('<VOL>', axis=1, inplace=True)
+        df_tsv = pd.read_csv(self.file_path, sep='\t') # raw data gives tab separated values
+        df_tsv.drop('<VOL>', axis=1, inplace=True) #forex data has no real volume 
         df_tsv['DateTime'] = pd.to_datetime(df_tsv['<DATE>'] + ' ' + df_tsv['<TIME>'])
         df_tsv.drop(['<DATE>', '<TIME>'], axis=1, inplace=True)
         df_tsv = df_tsv[['DateTime', '<OPEN>', '<HIGH>', '<LOW>', '<CLOSE>', '<TICKVOL>', '<SPREAD>']]
@@ -22,8 +22,8 @@ class FinancialAnalytics:
         df_tsv.to_csv(output_csv_file_path, index=False)
         return df_tsv
 
-    def fetch_news_sentiment_data(self, apikey='151J1CO4W4YLKP87'):
-        url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={self.ticker}&time_from={self.date_from}&limit=1000&sort={self.sort}&apikey={apikey}'
+    def fetch_news_sentiment_data(self):
+        url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers={self.ticker}&time_from={self.date_from}&limit=1000&sort={self.sort}&apikey=151J1CO4W4YLKP87'
         r = requests.get(url)
         eur_news_data = r.json()
         df = pd.DataFrame(eur_news_data)
@@ -40,8 +40,9 @@ class FinancialAnalytics:
 
     def cluster_data(self): 
         df_cluster = self.fetch_market_price_data()
+        df1 = df1.drop('DateTime', axis=1)
         scaler = StandardScaler()
-        scaled_df = scaler.fit_transform(df_cluster)
+        scaled_df = scaler.fit_transform(df1)
         wcss = []
         for i in range(1, 6):
             kmeans = KMeans(n_clusters=i, init='k-means++', max_iter=300, n_init=10, random_state=0)
