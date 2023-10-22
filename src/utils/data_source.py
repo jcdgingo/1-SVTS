@@ -40,7 +40,7 @@ class FinancialAnalytics:
 
     def cluster_data(self): 
         df_cluster = self.fetch_market_price_data()
-        df1 = df1.drop('DateTime', axis=1)
+        df1 = df_cluster.drop('DateTime', axis=1)
         scaler = StandardScaler()
         scaled_df = scaler.fit_transform(df1)
         wcss = []
