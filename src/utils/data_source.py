@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 
 class FinancialAnalytics:
-
     def __init__(self, file_path, ticker, date_from, sort):
         self.file_path = file_path
         self.ticker = ticker
@@ -18,8 +17,6 @@ class FinancialAnalytics:
         df_tsv['DateTime'] = pd.to_datetime(df_tsv['<DATE>'] + ' ' + df_tsv['<TIME>'])
         df_tsv.drop(['<DATE>', '<TIME>'], axis=1, inplace=True)
         df_tsv = df_tsv[['DateTime', '<OPEN>', '<HIGH>', '<LOW>', '<CLOSE>', '<TICKVOL>', '<SPREAD>']]
-        output_csv_file_path = r'C:\Users\jessi\OneDrive\1 Projects\1-svts\data\interim\EURUSD_M1.csv'
-        df_tsv.to_csv(output_csv_file_path, index=False)
         return df_tsv
 
     def fetch_news_sentiment_data(self):
@@ -35,12 +32,14 @@ class FinancialAnalytics:
         df_time = pd.json_normalize(df['feed'])
         df_time['time_published'] = pd.to_datetime(df_time['time_published'], format='%Y%m%dT%H%M%S')
         df_time['time_published'] = df_time['time_published'].dt.tz_localize('UTC').dt.tz_convert('America/New_York')
+        df_time['time_published'] = df_time['time_published'].dt.strftime('%Y-%m-%d %H:%M')
         eur_sentiment['time_published(est)'] = df_time['time_published']
         return eur_sentiment
 
     def cluster_data(self): 
         df_cluster = self.fetch_market_price_data()
         df1 = df_cluster.drop('DateTime', axis=1)
+        df1 = df1.dropna()
         scaler = StandardScaler()
         scaled_df = scaler.fit_transform(df1)
         wcss = []
@@ -53,10 +52,19 @@ class FinancialAnalytics:
         plt.xlabel('Number of clusters')
         plt.ylabel('WCSS')
         plt.show()
-        best_k = 6  # Assuming 6 is used based on your domain knowledge
+        best_k = 6  # Assuming 6 is used based on domain knowledge
         kmeans = KMeans(n_clusters=best_k, init='k-means++', max_iter=300, n_init=10, random_state=0)
         pred_y = kmeans.fit_predict(scaled_df)
         df_cluster['Cluster'] = pred_y
         return df_cluster
 
-    # Additional methods to append data can be added here
+    def all_features_combined(self):
+        news_sentiment = self.fetch_news_sentiment_data()
+        news_sentiment = news_sentiment.drop('ticker', axis=1)
+        clustered_data = self.cluster_data()
+        clustered_data['DateTime'] = pd.to_datetime(clustered_data['DateTime'])
+        news_sentiment['time_published(est)'] = pd.to_datetime(news_sentiment['time_published(est)']) 
+        all_features_df = pd.merge(clustered_data, news_sentiment, left_on='DateTime', right_on='time_published(est)', how='inner')
+        return all_features_df
+
+
