@@ -66,5 +66,3 @@ class FinancialAnalytics:
         news_sentiment['time_published(est)'] = pd.to_datetime(news_sentiment['time_published(est)']) 
         all_features_df = pd.merge(clustered_data, news_sentiment, left_on='DateTime', right_on='time_published(est)', how='inner')
         return all_features_df
-
-
