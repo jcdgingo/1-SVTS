@@ -59,10 +59,11 @@ class FinancialAnalytics:
         return df_cluster
 
     def all_features_combined(self):
-        news_sentiment = self.fetch_news_sentiment_data()
-        news_sentiment = news_sentiment.drop('ticker', axis=1)
+        #news_sentiment = self.fetch_news_sentiment_data()
+        #news_sentiment = news_sentiment.drop('ticker', axis=1)
+        news_sentiment = pd.read_csv(r'C:\Users\jessi\OneDrive\1 Projects\1-svts\data\external\news-analysis\usd_sentiment_combined_20231023T1516.csv')
         clustered_data = self.cluster_data()
         clustered_data['DateTime'] = pd.to_datetime(clustered_data['DateTime'])
         news_sentiment['time_published(est)'] = pd.to_datetime(news_sentiment['time_published(est)']) 
-        all_features_df = pd.merge(clustered_data, news_sentiment, left_on='DateTime', right_on='time_published(est)', how='inner')
+        all_features_df = pd.merge(clustered_data, news_sentiment, left_on='DateTime', right_on='time_published(est)', how='outer')
         return all_features_df
